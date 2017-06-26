@@ -45,7 +45,6 @@ void executarTiro();
 void ativarTiroSubRival();
 void executarTiroSubRival();
 
-
 void colocarMegulhadores();
 void colocarTubaroes();
 void colocarSubRival();
@@ -850,47 +849,6 @@ void animarHelice() {
 	if (helice) helice = false;
 	else helice = true;
 }
-void executarTiro() {
-	//EXECUTA O TIRO SE BASEANDO NO LADO DO SUBMARINO
-	if (tiro == true) {
-		if (tirodireita == true) {
-			tiroX += 30;
-			if (tiroX >= 360) {
-				tirodireita = false;
-				tiro = false;
-				tiroY += bufferY;
-				bufferY = 0;
-				if (esquerda == true) {
-					tiroX = posX - 180;
-				}
-				else {
-					tiroX = posX;
-				}
-			}
-		}
-		else if (tiroesquerda == true) {
-			tiroX -= 30;
-			if (tiroX <= -500) {
-				tiroesquerda = false;
-				tiro = false;
-				tiroY += bufferY;
-				bufferY = 0;
-				if (esquerda == true) {
-					tiroX = posX - 180;
-				}
-				else {
-					tiroX = posX;
-				}
-			}
-		}
-		else if (esquerda == false) {
-			tirodireita = true;
-		}
-		else if (esquerda == true) {
-			tiroesquerda = true;
-		}
-	}
-}
 
 void colocarMegulhadores() {
 	//COLOCA OS MERGULHADORES NA TELA E COLOCA O BARCO
@@ -1308,15 +1266,16 @@ void animarBarco() {
 		}
 	}
 }
+
 void ativarTiroSubRival() {
 	randomico = rand() % 70;
 	if (randomico == 0) {
-		if (tiroSub[0] == false) tiroSub[0] = true;
-		else if (tiroSub[1] == false) tiroSub[1] = true;
-		else if (tiroSub[2] == false) tiroSub[2] = true;
-		else if (tiroSub[3] == false) tiroSub[3] = true;
-		else if (tiroSub[4] == false) tiroSub[4] = true;
-		else if (tiroSub[5] == false) tiroSub[5] = true;
+		if (tiroSub[0] == false && submarinos[0] == true) tiroSub[0] = true;
+		else if (tiroSub[1] == false && submarinos[1] == true) tiroSub[1] = true;
+		else if (tiroSub[2] == false && submarinos[2] == true) tiroSub[2] = true;
+		else if (tiroSub[3] == false && submarinos[3] == true) tiroSub[3] = true;
+		else if (tiroSub[4] == false && submarinos[4] == true) tiroSub[4] = true;
+		else if (tiroSub[5] == false && submarinos[5] == true) tiroSub[5] = true;
 	}
 }
 void executarTiroSubRival() {
@@ -1326,6 +1285,47 @@ void executarTiroSubRival() {
 	if (tiroSub[3] == true) tiroSubX[3] -= 2;
 	if (tiroSub[4] == true) tiroSubX[4] += 2;
 	if (tiroSub[5] == true) tiroSubX[5] -= 2;
+}
+void executarTiro() {
+	//EXECUTA O TIRO SE BASEANDO NO LADO DO SUBMARINO
+	if (tiro == true) {
+		if (tirodireita == true) {
+			tiroX += 30;
+			if (tiroX >= 360) {
+				tirodireita = false;
+				tiro = false;
+				tiroY += bufferY;
+				bufferY = 0;
+				if (esquerda == true) {
+					tiroX = posX - 180;
+				}
+				else {
+					tiroX = posX;
+				}
+			}
+		}
+		else if (tiroesquerda == true) {
+			tiroX -= 30;
+			if (tiroX <= -500) {
+				tiroesquerda = false;
+				tiro = false;
+				tiroY += bufferY;
+				bufferY = 0;
+				if (esquerda == true) {
+					tiroX = posX - 180;
+				}
+				else {
+					tiroX = posX;
+				}
+			}
+		}
+		else if (esquerda == false) {
+			tirodireita = true;
+		}
+		else if (esquerda == true) {
+			tiroesquerda = true;
+		}
+	}
 }
 
 void colisaoSubmarinos() {
@@ -1960,7 +1960,16 @@ void colisaoTiroSubRival() {
 	}
 }
 void colisaoTiroSubRivalnoSub() {
-
+	//SE O TIRO SO SUBMARINO RIVAL 0 ESTÁ ATIVO  E COLIDE COM O SUBMARINO
+	if (tiroSub[0] == true ) {
+		if (esquerda == false && posX - 60 < tiroSubX[0] && posX + 70 > tiroSubX[0] && posY + 10 > tiroSubY[0] && posY < tiroSubY[0] + 10) {
+			perdeu = true;
+			//printf("colidiu;");
+		}
+		else if (esquerda == true && posX - 140 < tiroSubX[0] && posX - 10 > tiroSubX[0] && posY + 10 > tiroSubY[0] && posY < tiroSubY[0] + 10) {
+			perdeu = true;
+		}
+	}
 }
 
 void Perdeu() {
@@ -1977,15 +1986,18 @@ void Perdeu() {
 			mergulhador[i] = false;
 			tubaroes[i] = false;
 			submarinos[i] = false;
+			tiroSub[i] = false;
 			if (i % 2 == 0) {
 				subX[i] = -450;
 				merX[i] = -450;
 				tubX[i] = -450;
+				tiroSubX[i] = -450;
 			}
 			else {
 				subX[i] = 450;
 				merX[i] = 450;
 				tubX[i] = 450;
+				tiroSubX[i] = 450;
 			}
 		}
 		barcoesquerda = true;
@@ -2044,16 +2056,6 @@ void desenhar() {
 
 	//-----------------------------------------------------------------
 
-	//DESENHA OS SUBMARINOS RIVAIS, TEM 6 SUBMARINOS RIVAIS
-	if (submarinos[0] == true) DesenhaSubRival(subX[0], subY[0], tiroSubX[0], tiroSubY[0]);
-	if (submarinos[1] == true) DesenhaSubRivalD(subX[1], subY[1], tiroSubX[1], tiroSubY[1]);
-	if (submarinos[2] == true) DesenhaSubRival(subX[2], subY[2], tiroSubX[2], tiroSubY[2]);
-	if (submarinos[3] == true) DesenhaSubRivalD(subX[3], subY[3], tiroSubX[3], tiroSubY[3]);
-	if (submarinos[4] == true) DesenhaSubRival(subX[4], subY[4], tiroSubX[4], tiroSubY[4]);
-	if (submarinos[5] == true) DesenhaSubRivalD(subX[5], subY[5], tiroSubX[5], tiroSubY[5]);
-
-	//-----------------------------------------------------------------
-
 	//DESENHA OS TUBARÕES, TEM 6 TUBARÕES
 	if (tubaroes[0] == true) DesenhaTubarao(tubX[0], tubY[0]);
 	if (tubaroes[1] == true) DesenhaTubaraoD(tubX[1], tubY[1]);
@@ -2062,13 +2064,15 @@ void desenhar() {
 	if (tubaroes[4] == true) DesenhaTubarao(tubX[4], tubY[4]);
 	if (tubaroes[5] == true) DesenhaTubaraoD(tubX[5], tubY[5]);
 
-	/*glPointSize(4);
-	glColor3f(0, 0, 0);
-	glBegin(GL_POINTS);
-	glVertex2f(subX[0] - 5, subY[0]+10);
-	glVertex2f(subX[0] + 40, subY[0]-5);
-	glEnd();*/
+	//-----------------------------------------------------------------
 
+	//DESENHA OS SUBMARINOS RIVAIS, TEM 6 SUBMARINOS RIVAIS
+	if (submarinos[0] == true) DesenhaSubRival(subX[0], subY[0], tiroSubX[0], tiroSubY[0]);
+	if (submarinos[1] == true) DesenhaSubRivalD(subX[1], subY[1], tiroSubX[1], tiroSubY[1]);
+	if (submarinos[2] == true) DesenhaSubRival(subX[2], subY[2], tiroSubX[2], tiroSubY[2]);
+	if (submarinos[3] == true) DesenhaSubRivalD(subX[3], subY[3], tiroSubX[3], tiroSubY[3]);
+	if (submarinos[4] == true) DesenhaSubRival(subX[4], subY[4], tiroSubX[4], tiroSubY[4]);
+	if (submarinos[5] == true) DesenhaSubRivalD(subX[5], subY[5], tiroSubX[5], tiroSubY[5]);
 
 	//SE PERDER UMA VIDA
 	glColor3f(0, 0, 0);
@@ -2087,7 +2091,7 @@ void desenhar() {
 void animacao(int valor) {
 	//SE O JOGO ESTÁ ATIVO
 	if (rodando) {
-		animarOxigenio();
+		//animarOxigenio();
 		animarHelice();
 		executarTiro();
 
@@ -2103,14 +2107,16 @@ void animacao(int valor) {
 		animarSubRival();
 		animarBarco();
 
-		colisaoMergulhador();
-		//colisaoSubmarinos();
-		//colisaoTubarao();
-		//colisaoBarco();
+		/*colisaoMergulhador();
+		colisaoSubmarinos();
+		colisaoTubarao();
+		colisaoBarco();*/
 
 		colisaoTiroTubarao();
 		colisaoTiroSubRival();
-	}
+
+		colisaoTiroSubRivalnoSub();
+	} 
 	//SE O CARA SUBIR COM OS 8 MERGULHADORES
 	if (bonusMergulhador == true) {
 		Sleep(300);
@@ -2139,7 +2145,7 @@ void animacao(int valor) {
 	}
 
 	glutPostRedisplay();
-	glutTimerFunc(55, animacao, 1);
+	glutTimerFunc(75, animacao, 1);
 }
 void keyboard(unsigned char tecla, int x, int y) {
 	if (tecla == 'w' || tecla == 'W') {
