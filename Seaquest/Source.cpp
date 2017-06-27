@@ -11,18 +11,19 @@
 
 char plac[20];
 int merX[6] = { -450, 450,-450,450,-450,450 }, merY[6], subX[6] = { -450, 450,-450,450,-450,450 }, subY[6], tubX[6] = { -450,450,-450,450,-450,450 }, tubY[6],
-barcoX = -450, superficie = 0, tiroSubX[6] = { -450,450,-450,450,-450,450 }, tiroSubY[6] = { 0 };
+barcoX = -450, superficie = 0, tiroSubX[6] = { -450,450,-450,450,-450,450 }, tiroSubY[6] = { 0 }, opcaomenu = 1, opcaoSelecionada = 0;
 int placar = 0, posX = 0, posY = 0, tiroX = 0, tiroY = 0, bufferY = 0, qtdtubaroes = 0, randomico = 0, qtdmergulhadores = 0,
-mergulhadorescoletados = 0, vidas = 3, qtdsubmarinos = 0, mergulhadoresTotal = 0, contador = 0;
+mergulhadorescoletados = 0, vidas = 3, qtdsubmarinos = 0, mergulhadoresTotal = 0, contador = 0, contador1 = 0;
 float ang, barraoxigenio = 0;
 bool esquerda = false, helice = true, tiro = false, tiroesquerda = false, tirodireita = false, perdeu = false, morreu = false, mergulhador[6] = { false },
 submarinos[6] = { false }, tubaroes[6] = { false }, rodando = true, pausado = false, barco = true, barcoesquerda = true, tiroSub[6] = { false }, barrafinal = false,
-trocacor = true, bonusMergulhador = false, explosaoSubmarino = false, oxigenio = false;
+trocacor = true, bonusMergulhador = false, explosaoSubmarino = false, oxigenio = false, menu = true, animaMenu = true;
 
 void display(void);
 void animacao(int valor);
 void tela(GLsizei w, GLsizei h);
 void keyboard(unsigned char tecla, int x, int y);
+void SpecialInput(int key, int x, int y);
 void Perdeu();
 void Morreu();
 
@@ -38,6 +39,8 @@ void DesenhaTubaraoD(int x, int y);
 void DesenhaSubRival(int x, int y, int tirox, int tiroy);
 void DesenhaSubRivalD(int x, int y, int tirox, int tiroy);
 void DesenhaBarco(int x);
+void DesenhaExplosao();
+void DesenhaIcone(int x);
 
 void animarOxigenio();
 void animarHelice();
@@ -73,6 +76,7 @@ int main(int argc, char** argv) {
 	glutReshapeFunc(tela);
 	glutDisplayFunc(display);
 	glutKeyboardFunc(&keyboard);
+	glutSpecialFunc(SpecialInput);
 	glutTimerFunc(100, animacao, 1);
 	glutMainLoop();
 	return 0;
@@ -371,7 +375,7 @@ void DesenhaBala() {
 	//BALA
 	glPushMatrix();
 	glTranslatef(tiroX, tiroY, 0);
-	glColor3f(1, 1, 1);
+	glColor3f(0.7, 0.13, 0.13);
 	glLineWidth(3);
 	glBegin(GL_LINES);
 	glVertex3f(80, 5, 0);
@@ -716,7 +720,6 @@ void DesenhaSubRival(int x, int y, int tirox, int tiroy) {
 	//BALA
 	glPushMatrix();
 	glTranslatef(tirox, tiroy, 0);
-	glColor3f(1, 1, 1);
 	glLineWidth(2);
 	glBegin(GL_LINES);
 	glVertex3f(30, 3, 0);
@@ -777,7 +780,6 @@ void DesenhaSubRivalD(int x, int y, int tirox, int tiroy) {
 	//BALA
 	glPushMatrix();
 	glTranslatef(tirox, tiroy, 0);
-	glColor3f(1, 1, 1);
 	glLineWidth(2);
 	glBegin(GL_LINES);
 	glVertex3f(-30, 3, 0);
@@ -813,6 +815,57 @@ void DesenhaBarco(int x) {
 	glEnd();
 	glPopMatrix();
 }
+void DesenhaExplosao() {
+	if (esquerda) {
+		glPushMatrix();
+		glColor3f(1.0f, 0.0f, 0.0f);
+
+		glBegin(GL_TRIANGLES);
+		glVertex2f(0, 45);
+		glVertex2f(50, -20);
+		glVertex2f(-50, -20);
+		glEnd();
+
+		glBegin(GL_TRIANGLES);
+		glVertex2f(0, -45);
+		glVertex2f(50, 20);
+		glVertex2f(-50, 20);
+		glEnd();
+
+
+		glPopMatrix();
+	}
+	else {
+		glPushMatrix();
+		glColor3f(1.0f, 0.0f, 0.0f);
+
+		glBegin(GL_TRIANGLES);
+		glVertex2f(0, 45);
+		glVertex2f(50, -20);
+		glVertex2f(-50, -20);
+		glEnd();
+
+		glBegin(GL_TRIANGLES);
+		glVertex2f(0, -45);
+		glVertex2f(50, 20);
+		glVertex2f(-50, 20);
+		glEnd();
+
+
+		glPopMatrix();
+	}
+}
+void DesenhaIcone(int x) {
+	glPushMatrix();
+	glColor3f(1, 0, 0);
+	glTranslatef(-75, x, 0);
+	glBegin(GL_TRIANGLES);
+	glVertex2f(0, 7);
+	glVertex2f(0, -7);
+	glVertex2f(30, 0);
+	glEnd();
+	glPopMatrix();
+}
 
 void animarOxigenio() {
 	//ANIMAR A BARRA DE OXIGÊNIO
@@ -825,7 +878,8 @@ void animarOxigenio() {
 
 		}
 		else {
-			perdeu = true;
+			explosaoSubmarino = true;
+			barrafinal = false;
 			barraoxigenio += 290;
 		}
 	}
@@ -868,32 +922,32 @@ void colocarMegulhadores() {
 				mergulhador[0] = true;
 				//OBTEM UM VALOR PARA O Y DO MERGULHADOR DE -140 ATÉ 140
 				srand((unsigned)time(NULL));
-				merY[0] = (rand() % 260) - 120;
+				merY[0] = (rand() % 280) - 140;
 			}
 			//SE O MERGULHADOR 1 ESTA FORA ELE É CHAMADO
 			else if (mergulhador[1] == false) {
 				mergulhador[1] = true;
-				merY[1] = (rand() % 260) - 120;
+				merY[1] = (rand() % 280) - 140;
 			}
 			//SE O MERGULHADOR 2 ESTA FORA ELE É CHAMADO
 			else if (mergulhador[2] == false) {
 				mergulhador[2] = true;
-				merY[2] = (rand() % 260) - 120;
+				merY[2] = (rand() % 280) - 140;
 			}
 			//SE O MERGULHADOR 3 ESTA FORA ELE É CHAMADO
 			else if (mergulhador[3] == false) {
 				mergulhador[3] = true;
-				merY[3] = (rand() % 260) - 120;
+				merY[3] = (rand() % 280) - 140;
 			}
 			//SE O MERGULHADOR 4 ESTA FORA ELE É CHAMADO
 			else if (mergulhador[4] == false) {
 				mergulhador[4] = true;
-				merY[4] = (rand() % 260) - 120;
+				merY[4] = (rand() % 280) - 140;
 			}
 			//SE O MERGULHADOR 5 ESTA FORA ELE É CHAMADO
 			else if (mergulhador[5] == false) {
 				mergulhador[5] = true;
-				merY[5] = (rand() % 260) - 120;
+				merY[5] = (rand() % 280) - 140;
 			}
 		}
 	}
@@ -910,54 +964,54 @@ void colocarTubaroes() {
 				tubaroes[0] = true;
 				//OBTEM UM VALOR PARA O Y DO SUBMARINO DE -140 ATÉ 140
 				srand((unsigned)time(NULL));
-				tubY[0] = (rand() % 260) - 130;
+				tubY[0] = (rand() % 280) - 150;
 				while (tubY[0] % 10 != 0) {
-					tubY[0] = (rand() % 260) - 130;
+					tubY[0] = (rand() % 280) - 150;
 				}
 				tubY[0] += 13;
 			}
 			//SE O TUBARAO 1 ESTA FORA ELE É CHAMADO
 			else if (tubaroes[1] == false) {
 				tubaroes[1] = true;
-				tubY[1] = (rand() % 260) - 130;
+				tubY[1] = (rand() % 280) - 150;
 				while (tubY[1] % 10 != 0) {
-					tubY[1] = (rand() % 260) - 130;
+					tubY[1] = (rand() % 280) - 150;
 				}
 				tubY[1] += 13;
 			}
 			//SE O TUBARAO 2 ESTA FORA ELE É CHAMADO
 			else if (tubaroes[2] == false) {
 				tubaroes[2] = true;
-				tubY[2] = (rand() % 260) - 130;
+				tubY[2] = (rand() % 280) - 150;
 				while (tubY[2] % 10 != 0) {
-					tubY[2] = (rand() % 260) - 130;
+					tubY[2] = (rand() % 280) - 150;
 				}
 				tubY[2] += 13;
 			}
 			//SE O TUBARAO 3 ESTA FORA ELE É CHAMADO
 			else if (tubaroes[3] == false) {
 				tubaroes[3] = true;
-				tubY[3] = (rand() % 260) - 130;
+				tubY[3] = (rand() % 280) - 150;
 				while (tubY[3] % 10 != 0) {
-					tubY[3] = (rand() % 260) - 130;
+					tubY[3] = (rand() % 280) - 150;
 				}
 				tubY[3] += 13;
 			}
 			//SE O TUBARAO 4 ESTA FORA ELE É CHAMADO
 			else if (tubaroes[4] == false) {
 				tubaroes[4] = true;
-				tubY[4] = (rand() % 260) - 130;
+				tubY[4] = (rand() % 280) - 150;
 				while (tubY[4] % 10 != 0) {
-					tubY[4] = (rand() % 260) - 130;
+					tubY[4] = (rand() % 280) - 150;
 				}
 				tubY[4] += 13;
 			}
 			//SE O TUBARAO 5 ESTA FORA ELE É CHAMADO
 			else if (tubaroes[5] == false) {
 				tubaroes[5] = true;
-				tubY[5] = (rand() % 260) - 130;
+				tubY[5] = (rand() % 280) - 150;
 				while (tubY[5] % 10 != 0) {
-					tubY[5] = (rand() % 260) - 130;
+					tubY[5] = (rand() % 280) - 150;
 				}
 				tubY[5] += 13;
 			}
@@ -976,37 +1030,37 @@ void colocarSubRival() {
 				submarinos[0] = true;
 				//OBTEM UM VALOR PARA O Y DO SUBMARINO DE -140 ATÉ 140
 				srand((unsigned)time(NULL));
-				subY[0] = (rand() % 260) - 120;
+				subY[0] = (rand() % 280) - 140;
 				tiroSubY[0] = subY[0];
 			}
 			//SE O SUBMARINO 1 ESTA FORA ELE É CHAMADO
 			else if (submarinos[1] == false) {
 				submarinos[1] = true;
-				subY[1] = (rand() % 260) - 120;
+				subY[1] = (rand() % 280) - 140;
 				tiroSubY[1] = subY[1];
 			}
 			//SE O SUBMARINO 2 ESTA FORA ELE É CHAMADO
 			else if (submarinos[2] == false) {
 				submarinos[2] = true;
-				subY[2] = (rand() % 260) - 120;
+				subY[2] = (rand() % 280) - 140;
 				tiroSubY[2] = subY[2];
 			}
 			//SE O SUBMARINO 3 ESTA FORA ELE É CHAMADO
 			else if (submarinos[3] == false) {
 				submarinos[3] = true;
-				subY[3] = (rand() % 260) - 120;
+				subY[3] = (rand() % 280) - 140;
 				tiroSubY[3] = subY[3];
 			}
 			//SE O SUBMARINO 4 ESTA FORA ELE É CHAMADO
 			else if (submarinos[4] == false) {
 				submarinos[4] = true;
-				subY[4] = (rand() % 260) - 120;
+				subY[4] = (rand() % 280) - 140;
 				tiroSubY[4] = subY[4];
 			}
 			//SE O SUBMARINO 5 ESTA FORA ELE É CHAMADO
 			else if (submarinos[5] == false) {
 				submarinos[5] = true;
-				subY[5] = (rand() % 260) - 120;
+				subY[5] = (rand() % 280) - 140;
 				tiroSubY[5] = subY[5];
 			}
 		}
@@ -1336,7 +1390,7 @@ void colisaoSubmarinos() {
 			subX[0] = -450;
 			submarinos[0] = false;
 			qtdsubmarinos--;
-			perdeu = true;
+			explosaoSubmarino = true;
 		}
 	}
 	else {
@@ -1344,7 +1398,7 @@ void colisaoSubmarinos() {
 			subX[0] = -450;
 			submarinos[0] = false;
 			qtdsubmarinos--;
-			perdeu = true;
+			explosaoSubmarino = true;
 		}
 	}
 
@@ -1354,7 +1408,7 @@ void colisaoSubmarinos() {
 			subX[1] = 450;
 			submarinos[1] = false;
 			qtdsubmarinos--;
-			perdeu = true;
+			explosaoSubmarino = true;
 		}
 	}
 	else {
@@ -1362,7 +1416,7 @@ void colisaoSubmarinos() {
 			subX[1] = 450;
 			submarinos[1] = false;
 			qtdsubmarinos--;
-			perdeu = true;
+			explosaoSubmarino = true;
 		}
 	}
 
@@ -1373,7 +1427,7 @@ void colisaoSubmarinos() {
 			subX[2] = -450;
 			submarinos[2] = false;
 			qtdsubmarinos--;
-			perdeu = true;
+			explosaoSubmarino = true;
 		}
 	}
 	else {
@@ -1381,7 +1435,7 @@ void colisaoSubmarinos() {
 			subX[2] = -450;
 			submarinos[2] = false;
 			qtdsubmarinos--;
-			perdeu = true;
+			explosaoSubmarino = true;
 		}
 	}
 
@@ -1391,7 +1445,7 @@ void colisaoSubmarinos() {
 			subX[3] = 450;
 			submarinos[3] = false;
 			qtdsubmarinos--;
-			perdeu = true;
+			explosaoSubmarino = true;
 		}
 	}
 	else {
@@ -1399,7 +1453,7 @@ void colisaoSubmarinos() {
 			subX[3] = 450;
 			submarinos[3] = false;
 			qtdsubmarinos--;
-			perdeu = true;
+			explosaoSubmarino = true;
 		}
 	}
 
@@ -1410,7 +1464,7 @@ void colisaoSubmarinos() {
 			subX[4] = -450;
 			submarinos[4] = false;
 			qtdsubmarinos--;
-			perdeu = true;
+			explosaoSubmarino = true;
 		}
 	}
 	else {
@@ -1418,7 +1472,7 @@ void colisaoSubmarinos() {
 			subX[4] = -450;
 			submarinos[4] = false;
 			qtdsubmarinos--;
-			perdeu = true;
+			explosaoSubmarino = true;
 		}
 	}
 
@@ -1428,7 +1482,7 @@ void colisaoSubmarinos() {
 			subX[5] = 450;
 			submarinos[5] = false;
 			qtdsubmarinos--;
-			perdeu = true;
+			explosaoSubmarino = true;
 		}
 	}
 	else {
@@ -1436,7 +1490,7 @@ void colisaoSubmarinos() {
 			subX[5] = 450;
 			submarinos[5] = false;
 			qtdsubmarinos--;
-			perdeu = true;
+			explosaoSubmarino = true;
 		}
 	}
 }
@@ -1592,7 +1646,7 @@ void colisaoTubarao() {
 			tubX[0] = -450;
 			tubaroes[0] = false;
 			qtdtubaroes--;
-			perdeu = true;
+			explosaoSubmarino = true;
 		}
 	}
 	else {
@@ -1600,7 +1654,7 @@ void colisaoTubarao() {
 			tubX[0] = -450;
 			tubaroes[0] = false;
 			qtdtubaroes--;
-			perdeu = true;
+			explosaoSubmarino = true;
 		}
 	}
 
@@ -1610,7 +1664,7 @@ void colisaoTubarao() {
 			tubX[1] = 450;
 			tubaroes[1] = false;
 			qtdtubaroes--;
-			perdeu = true;
+			explosaoSubmarino = true;
 		}
 	}
 	else {
@@ -1618,7 +1672,7 @@ void colisaoTubarao() {
 			tubX[1] = 450;
 			tubaroes[1] = false;
 			qtdtubaroes--;
-			perdeu = true;
+			explosaoSubmarino = true;
 		}
 	}
 
@@ -1628,7 +1682,7 @@ void colisaoTubarao() {
 			tubX[2] = -450;
 			tubaroes[2] = false;
 			qtdtubaroes--;
-			perdeu = true;
+			explosaoSubmarino = true;
 		}
 	}
 	else {
@@ -1636,7 +1690,7 @@ void colisaoTubarao() {
 			tubX[2] = -450;
 			tubaroes[2] = false;
 			qtdtubaroes--;
-			perdeu = true;
+			explosaoSubmarino = true;
 		}
 	}
 
@@ -1646,7 +1700,7 @@ void colisaoTubarao() {
 			tubX[3] = 450;
 			tubaroes[3] = false;
 			qtdtubaroes--;
-			perdeu = true;
+			explosaoSubmarino = true;
 		}
 	}
 	else {
@@ -1654,7 +1708,7 @@ void colisaoTubarao() {
 			tubX[3] = 450;
 			tubaroes[3] = false;
 			qtdtubaroes--;
-			perdeu = true;
+			explosaoSubmarino = true;
 		}
 	}
 
@@ -1664,7 +1718,7 @@ void colisaoTubarao() {
 			tubX[4] = -450;
 			tubaroes[4] = false;
 			qtdtubaroes--;
-			perdeu = true;
+			explosaoSubmarino = true;
 		}
 	}
 	else {
@@ -1672,7 +1726,7 @@ void colisaoTubarao() {
 			tubX[4] = -450;
 			tubaroes[4] = false;
 			qtdtubaroes--;
-			perdeu = true;
+			explosaoSubmarino = true;
 		}
 	}
 
@@ -1682,7 +1736,7 @@ void colisaoTubarao() {
 			tubX[5] = 450;
 			tubaroes[5] = false;
 			qtdtubaroes--;
-			perdeu = true;
+			explosaoSubmarino = true;
 		}
 	}
 	else {
@@ -1690,7 +1744,7 @@ void colisaoTubarao() {
 			tubX[5] = 450;
 			tubaroes[5] = false;
 			qtdtubaroes--;
-			perdeu = true;
+			explosaoSubmarino = true;
 		}
 	}
 }
@@ -1700,7 +1754,7 @@ void colisaoBarco() {
 			barcoesquerda = true;
 			barcoX = -450;
 			barco = false;
-			perdeu = true;
+			explosaoSubmarino = true;
 		}
 	}
 	else {
@@ -1708,7 +1762,7 @@ void colisaoBarco() {
 			barcoesquerda = true;
 			barcoX = -450;
 			barco = false;
-			perdeu = true;
+			explosaoSubmarino = true;
 		}
 	}
 }
@@ -1961,13 +2015,62 @@ void colisaoTiroSubRival() {
 }
 void colisaoTiroSubRivalnoSub() {
 	//SE O TIRO SO SUBMARINO RIVAL 0 ESTÁ ATIVO  E COLIDE COM O SUBMARINO
-	if (tiroSub[0] == true ) {
+	if (tiroSub[0] == true) {
 		if (esquerda == false && posX - 60 < tiroSubX[0] && posX + 70 > tiroSubX[0] && posY + 10 > tiroSubY[0] && posY < tiroSubY[0] + 10) {
-			perdeu = true;
-			//printf("colidiu;");
+			explosaoSubmarino = true;
 		}
 		else if (esquerda == true && posX - 140 < tiroSubX[0] && posX - 10 > tiroSubX[0] && posY + 10 > tiroSubY[0] && posY < tiroSubY[0] + 10) {
-			perdeu = true;
+			explosaoSubmarino = true;
+		}
+	}
+
+	//SE O TIRO SO SUBMARINO RIVAL 1 ESTÁ ATIVO  E COLIDE COM O SUBMARINO
+	if (tiroSub[1] == true) {
+		if (esquerda == false && posX - 60 < tiroSubX[1] && posX + 70 > tiroSubX[1] && posY + 10 > tiroSubY[1] && posY < tiroSubY[1] + 10) {
+			explosaoSubmarino = true;
+		}
+		else if (esquerda == true && posX - 140 < tiroSubX[1] && posX - 10 > tiroSubX[1] && posY + 10 > tiroSubY[1] && posY < tiroSubY[1] + 10) {
+			explosaoSubmarino = true;
+		}
+	}
+
+	//SE O TIRO SO SUBMARINO RIVAL 2 ESTÁ ATIVO  E COLIDE COM O SUBMARINO
+	if (tiroSub[2] == true) {
+		if (esquerda == false && posX - 60 < tiroSubX[2] && posX + 70 > tiroSubX[2] && posY + 10 > tiroSubY[2] && posY < tiroSubY[2] + 10) {
+			explosaoSubmarino = true;
+		}
+		else if (esquerda == true && posX - 140 < tiroSubX[2] && posX - 10 > tiroSubX[2] && posY + 10 > tiroSubY[2] && posY < tiroSubY[2] + 10) {
+			explosaoSubmarino = true;
+		}
+	}
+
+	//SE O TIRO SO SUBMARINO RIVAL 3 ESTÁ ATIVO  E COLIDE COM O SUBMARINO
+	if (tiroSub[3] == true) {
+		if (esquerda == false && posX - 60 < tiroSubX[3] && posX + 70 > tiroSubX[3] && posY + 10 > tiroSubY[3] && posY < tiroSubY[3] + 10) {
+			explosaoSubmarino = true;
+		}
+		else if (esquerda == true && posX - 140 < tiroSubX[3] && posX - 10 > tiroSubX[3] && posY + 10 > tiroSubY[3] && posY < tiroSubY[3] + 10) {
+			explosaoSubmarino = true;
+		}
+	}
+
+	//SE O TIRO SO SUBMARINO RIVAL 4 ESTÁ ATIVO  E COLIDE COM O SUBMARINO
+	if (tiroSub[4] == true) {
+		if (esquerda == false && posX - 60 < tiroSubX[4] && posX + 70 > tiroSubX[4] && posY + 10 > tiroSubY[4] && posY < tiroSubY[4] + 10) {
+			explosaoSubmarino = true;
+		}
+		else if (esquerda == true && posX - 140 < tiroSubX[4] && posX - 10 > tiroSubX[4] && posY + 10 > tiroSubY[4] && posY < tiroSubY[4] + 10) {
+			explosaoSubmarino = true;
+		}
+	}
+
+	//SE O TIRO SO SUBMARINO RIVAL 5 ESTÁ ATIVO  E COLIDE COM O SUBMARINO
+	if (tiroSub[5] == true) {
+		if (esquerda == false && posX - 60 < tiroSubX[5] && posX + 70 > tiroSubX[5] && posY + 10 > tiroSubY[5] && posY < tiroSubY[5] + 10) {
+			explosaoSubmarino = true;
+		}
+		else if (esquerda == true && posX - 140 < tiroSubX[5] && posX - 10 > tiroSubX[5] && posY + 10 > tiroSubY[5] && posY < tiroSubY[5] + 10) {
+			explosaoSubmarino = true;
 		}
 	}
 }
@@ -1975,13 +2078,10 @@ void colisaoTiroSubRivalnoSub() {
 void Perdeu() {
 	//SE PERDER UMA VIDA
 	if (perdeu == true) {
-		explosaoSubmarino = true;
-		rodando = false;
+		perdeu = false;
 		vidas--;
-
 		if (mergulhadorescoletados >= 2)	mergulhadorescoletados -= 2;
 		else if (mergulhadorescoletados == 1)	mergulhadorescoletados--;
-		perdeu = false;
 		for (int i = 0; i < 6; i++) {
 			mergulhador[i] = false;
 			tubaroes[i] = false;
@@ -2013,139 +2113,239 @@ void Perdeu() {
 }
 void Morreu() {
 	if (morreu == true) {
-		glColor3f(0, 0, 0);
 		rodando = false;
-		DesenhaTexto("Voce Perdeu", 0, 0, GLUT_BITMAP_TIMES_ROMAN_24);
+		glBegin(GL_QUADS);
+		glColor3f(0, 0, 0);
+		glVertex2f(-150, 100);
+		glVertex2f(150, 100);
+		glVertex2f(150, -100);
+		glVertex2f(-150, -100);
+		glEnd();
+		glColor3f(1, 0, 0);
+		DesenhaTexto("GAME OVER", -70, 0, GLUT_BITMAP_TIMES_ROMAN_24);
 	}
 }
 
 void desenhar() {
-	DesenhaFundo();
-	DesenhaSubmarino();
-	DesenhaBala();
-	DesenhaBarco(barcoX);
-
-	//-----------------------------------------------------------------
-
-	//DESENHA OS MINI SUBMARINOS AO LADO DA PONTUACAO MOSTRANDO AS VIDAS
-	if (vidas >= 1) DesenhaMiniSubmarino(-180, 225);
-	if (vidas >= 2) DesenhaMiniSubmarino(-110, 225);
-	if (vidas >= 3) DesenhaMiniSubmarino(-40, 225);
-
-	//-----------------------------------------------------------------
-
-	//DESENHA OS MERGULHADORES, TEM 6 MERGULHADORES
-	if (mergulhador[0] == true) DesenhaMergulhador(merX[0], merY[0]);
-	if (mergulhador[1] == true) DesenhaMergulhadorD(merX[1], merY[1]);
-	if (mergulhador[2] == true) DesenhaMergulhador(merX[2], merY[2]);
-	if (mergulhador[3] == true) DesenhaMergulhadorD(merX[3], merY[3]);
-	if (mergulhador[4] == true) DesenhaMergulhador(merX[4], merY[4]);
-	if (mergulhador[5] == true) DesenhaMergulhadorD(merX[5], merY[5]);
-
-	//-----------------------------------------------------------------
-
-	//DESENHA OS MERGULHADORES COLETADOS AO LADO DO OXIGENIO
-	if (mergulhadorescoletados >= 1) DesenhaMergulhador(80, -188);
-	if (mergulhadorescoletados >= 2) DesenhaMergulhador(120, -188);
-	if (mergulhadorescoletados >= 3) DesenhaMergulhador(160, -188);
-	if (mergulhadorescoletados >= 4) DesenhaMergulhador(200, -188);
-	if (mergulhadorescoletados >= 5) DesenhaMergulhador(240, -188);
-	if (mergulhadorescoletados >= 6) DesenhaMergulhador(280, -188);
-	if (mergulhadorescoletados >= 7) DesenhaMergulhador(320, -188);
-	if (mergulhadorescoletados >= 8) DesenhaMergulhador(360, -188);
-
-	//-----------------------------------------------------------------
-
-	//DESENHA OS TUBARÕES, TEM 6 TUBARÕES
-	if (tubaroes[0] == true) DesenhaTubarao(tubX[0], tubY[0]);
-	if (tubaroes[1] == true) DesenhaTubaraoD(tubX[1], tubY[1]);
-	if (tubaroes[2] == true) DesenhaTubarao(tubX[2], tubY[2]);
-	if (tubaroes[3] == true) DesenhaTubaraoD(tubX[3], tubY[3]);
-	if (tubaroes[4] == true) DesenhaTubarao(tubX[4], tubY[4]);
-	if (tubaroes[5] == true) DesenhaTubaraoD(tubX[5], tubY[5]);
-
-	//-----------------------------------------------------------------
-
-	//DESENHA OS SUBMARINOS RIVAIS, TEM 6 SUBMARINOS RIVAIS
-	if (submarinos[0] == true) DesenhaSubRival(subX[0], subY[0], tiroSubX[0], tiroSubY[0]);
-	if (submarinos[1] == true) DesenhaSubRivalD(subX[1], subY[1], tiroSubX[1], tiroSubY[1]);
-	if (submarinos[2] == true) DesenhaSubRival(subX[2], subY[2], tiroSubX[2], tiroSubY[2]);
-	if (submarinos[3] == true) DesenhaSubRivalD(subX[3], subY[3], tiroSubX[3], tiroSubY[3]);
-	if (submarinos[4] == true) DesenhaSubRival(subX[4], subY[4], tiroSubX[4], tiroSubY[4]);
-	if (submarinos[5] == true) DesenhaSubRivalD(subX[5], subY[5], tiroSubX[5], tiroSubY[5]);
-
-	//SE PERDER UMA VIDA
-	glColor3f(0, 0, 0);
-	if (rodando == false && bonusMergulhador == false) DesenhaTexto("Tecle 0 para Continuar!", -100, 0, GLUT_BITMAP_TIMES_ROMAN_24);
-	//SE PAUSAR
-	glColor3f(0, 0, 0);
-	if (pausado) {
-		DesenhaTexto("PAUSE", -20, 20, GLUT_BITMAP_TIMES_ROMAN_24);
-		DesenhaTexto("Tecle 0 para Continuar!", -100, 0, GLUT_BITMAP_TIMES_ROMAN_24);
-	}
-	//SE PERDER UMA VIDA
-	Perdeu();
-	//SE ACABAR AS VIDAS
-	Morreu();
-}
-void animacao(int valor) {
-	//SE O JOGO ESTÁ ATIVO
-	if (rodando) {
-		//animarOxigenio();
-		animarHelice();
-		executarTiro();
-
-		ativarTiroSubRival();
-		executarTiroSubRival();
-
-		colocarMegulhadores();
-		colocarTubaroes();
-		colocarSubRival();
-
-		animarMergulhador();
-		animarTubaroes();
-		animarSubRival();
-		animarBarco();
-
-		/*colisaoMergulhador();
-		colisaoSubmarinos();
-		colisaoTubarao();
-		colisaoBarco();*/
-
-		colisaoTiroTubarao();
-		colisaoTiroSubRival();
-
-		colisaoTiroSubRivalnoSub();
-	} 
-	//SE O CARA SUBIR COM OS 8 MERGULHADORES
-	if (bonusMergulhador == true) {
-		Sleep(300);
-		placar += 50;
-		mergulhadorescoletados--;
-		if (mergulhadorescoletados == 0) {
-			bonusMergulhador = false;
-			oxigenio = true;
-		}
-	}
-	if (oxigenio) {
-		if (barraoxigenio < 0) {
-			barraoxigenio += 5;
-			if (barraoxigenio > 0) {
-				barraoxigenio = 0;
-				oxigenio = false;
-				rodando = true;
+	if (menu == true) {
+		if (opcaoSelecionada == 0) {
+			switch (opcaomenu) {
+			case 1:
+				DesenhaIcone(47);
+				break;
+			case 2:
+				DesenhaIcone(6);
+				break;
+			case 3:
+				DesenhaIcone(-35);
+				break;
+			default:
+				printf("W.O.");
+				break;
 			}
 		}
-	}
-	//QUANDO O CARA MORRE
-	if (explosaoSubmarino == true) {
-		printf("fudeu");
 
-		explosaoSubmarino = false;
+
+		glColor3f(1, 1, 1);
+		DesenhaTexto("SEA SUB", -30, 200, GLUT_BITMAP_TIMES_ROMAN_24);
+		if (opcaoSelecionada == 0) {
+			DesenhaTexto("- Use as setas para mover - ", -50, 110, GLUT_BITMAP_HELVETICA_12);
+			if (animaMenu == true) DesenhaTexto("- Tecle 0 para selecionar - ", -48, 80, GLUT_BITMAP_HELVETICA_12);
+			DesenhaTexto("- Iniciar jogo", -40, 40, GLUT_BITMAP_HELVETICA_18);
+			DesenhaTexto("- Regras do jogo", -40, 0, GLUT_BITMAP_HELVETICA_18);
+			DesenhaTexto("- Controles", -40, -40, GLUT_BITMAP_HELVETICA_18);
+		}
+		if (opcaoSelecionada == 2) {
+			if (animaMenu == true) DesenhaTexto("- Tecle 0 para voltar - ", -48, 80, GLUT_BITMAP_HELVETICA_12);
+			glPushMatrix();
+			glTranslatef(-50, 0, 0);
+			DesenhaSubRival(-130, 30, -500, 0);
+			glColor3f(1, 1, 1);
+			DesenhaTexto(" - 30 Pontos ao destruir. - Colidindo morre.", -80, 25, GLUT_BITMAP_8_BY_13);
+
+			DesenhaMergulhador(-110, -10);
+			glColor3f(1, 1, 1);
+			DesenhaTexto(" - 10 Pontos ao coletar. - Colidindo coleta.", -80, -20, GLUT_BITMAP_8_BY_13);
+
+			DesenhaTubarao(-120, -70);
+			glColor3f(1, 1, 1);
+			DesenhaTexto(" - 20 Pontos ao destruir. - Colidindo morre.", -80, -65, GLUT_BITMAP_8_BY_13);
+			
+			glPushMatrix();
+			glTranslatef(0, -270, 0);
+			DesenhaBarco(-140);
+			glPopMatrix();
+			glColor3f(1, 1, 1);
+			DesenhaTexto(" - Colidindo morre.", -80, -110, GLUT_BITMAP_8_BY_13);
+			glPopMatrix();
+		}
+		if (opcaoSelecionada == 3) {
+			if (animaMenu == true) DesenhaTexto("- Tecle 0 para voltar - ", -48, 80, GLUT_BITMAP_HELVETICA_12);
+			DesenhaTexto("0", -80, 30, GLUT_BITMAP_TIMES_ROMAN_24);
+			DesenhaTexto(" - Atira", -40, 34, GLUT_BITMAP_9_BY_15);
+
+			DesenhaTexto("W", -80, 0, GLUT_BITMAP_TIMES_ROMAN_24);
+			DesenhaTexto(" - Acima", -40, 4, GLUT_BITMAP_9_BY_15);
+
+			DesenhaTexto("A", -80, -30, GLUT_BITMAP_TIMES_ROMAN_24);
+			DesenhaTexto(" - Esquerda", -40, -26, GLUT_BITMAP_9_BY_15);
+
+			DesenhaTexto("S", -80, -60, GLUT_BITMAP_TIMES_ROMAN_24);
+			DesenhaTexto(" - Abaixo", -40, -56, GLUT_BITMAP_9_BY_15);
+
+			DesenhaTexto("D", -80, -90, GLUT_BITMAP_TIMES_ROMAN_24);
+			DesenhaTexto(" - Direita", -40, -86, GLUT_BITMAP_9_BY_15);
+		}
+
+		DesenhaTexto("FELIPE PERGHER", -380, -240, GLUT_BITMAP_9_BY_15);
+		DesenhaTexto("IFC VIDEIRA", 280, -240, GLUT_BITMAP_9_BY_15);
 	}
+	else {
+		DesenhaFundo();
+		DesenhaBala();
+		DesenhaSubmarino();
+		DesenhaBarco(barcoX);
+		//DesenhaExplosao();
+
+		//-----------------------------------------------------------------
+
+		//DESENHA OS MINI SUBMARINOS AO LADO DA PONTUACAO MOSTRANDO AS VIDAS
+		if (vidas >= 1) DesenhaMiniSubmarino(-180, 225);
+		if (vidas >= 2) DesenhaMiniSubmarino(-110, 225);
+		if (vidas >= 3) DesenhaMiniSubmarino(-40, 225);
+
+		//-----------------------------------------------------------------
+
+		//DESENHA OS MERGULHADORES, TEM 6 MERGULHADORES
+		if (mergulhador[0] == true) DesenhaMergulhador(merX[0], merY[0]);
+		if (mergulhador[1] == true) DesenhaMergulhadorD(merX[1], merY[1]);
+		if (mergulhador[2] == true) DesenhaMergulhador(merX[2], merY[2]);
+		if (mergulhador[3] == true) DesenhaMergulhadorD(merX[3], merY[3]);
+		if (mergulhador[4] == true) DesenhaMergulhador(merX[4], merY[4]);
+		if (mergulhador[5] == true) DesenhaMergulhadorD(merX[5], merY[5]);
+
+		//-----------------------------------------------------------------
+
+		//DESENHA OS MERGULHADORES COLETADOS AO LADO DO OXIGENIO
+		if (mergulhadorescoletados >= 1) DesenhaMergulhador(80, -188);
+		if (mergulhadorescoletados >= 2) DesenhaMergulhador(120, -188);
+		if (mergulhadorescoletados >= 3) DesenhaMergulhador(160, -188);
+		if (mergulhadorescoletados >= 4) DesenhaMergulhador(200, -188);
+		if (mergulhadorescoletados >= 5) DesenhaMergulhador(240, -188);
+		if (mergulhadorescoletados >= 6) DesenhaMergulhador(280, -188);
+		if (mergulhadorescoletados >= 7) DesenhaMergulhador(320, -188);
+		if (mergulhadorescoletados >= 8) DesenhaMergulhador(360, -188);
+
+		//-----------------------------------------------------------------
+
+		//DESENHA OS TUBARÕES, TEM 6 TUBARÕES
+		if (tubaroes[0] == true) DesenhaTubarao(tubX[0], tubY[0]);
+		if (tubaroes[1] == true) DesenhaTubaraoD(tubX[1], tubY[1]);
+		if (tubaroes[2] == true) DesenhaTubarao(tubX[2], tubY[2]);
+		if (tubaroes[3] == true) DesenhaTubaraoD(tubX[3], tubY[3]);
+		if (tubaroes[4] == true) DesenhaTubarao(tubX[4], tubY[4]);
+		if (tubaroes[5] == true) DesenhaTubaraoD(tubX[5], tubY[5]);
+
+		//-----------------------------------------------------------------
+
+		//DESENHA OS SUBMARINOS RIVAIS, TEM 6 SUBMARINOS RIVAIS
+		if (submarinos[0] == true) DesenhaSubRival(subX[0], subY[0], tiroSubX[0], tiroSubY[0]);
+		if (submarinos[1] == true) DesenhaSubRivalD(subX[1], subY[1], tiroSubX[1], tiroSubY[1]);
+		if (submarinos[2] == true) DesenhaSubRival(subX[2], subY[2], tiroSubX[2], tiroSubY[2]);
+		if (submarinos[3] == true) DesenhaSubRivalD(subX[3], subY[3], tiroSubX[3], tiroSubY[3]);
+		if (submarinos[4] == true) DesenhaSubRival(subX[4], subY[4], tiroSubX[4], tiroSubY[4]);
+		if (submarinos[5] == true) DesenhaSubRivalD(subX[5], subY[5], tiroSubX[5], tiroSubY[5]);
+
+		//SE PERDER UMA VIDA
+		glColor3f(0, 0, 0);
+		if (rodando == false && bonusMergulhador == false && oxigenio == false && morreu == false) DesenhaTexto("Tecle 0 para Continuar!", -100, 0, GLUT_BITMAP_TIMES_ROMAN_24);
+		//SE PAUSAR
+		glColor3f(0, 0, 0);
+		if (pausado) {
+			DesenhaTexto("PAUSE", -20, 20, GLUT_BITMAP_TIMES_ROMAN_24);
+			DesenhaTexto("Tecle 0 para Continuar!", -100, 0, GLUT_BITMAP_TIMES_ROMAN_24);
+		}
+		//SE PERDER UMA VIDA
+		Perdeu();
+		//SE ACABAR AS VIDAS
+		Morreu();
+	}
+
+}
+void animacao(int valor) {
+	if (menu == true) {
+		contador1++;
+		if (contador1 % 5 == 0) {
+			if (animaMenu == false) animaMenu = true;
+			else animaMenu = false;
+		}
+
+	}
+	else {
+		//SE O JOGO ESTÁ ATIVO
+		if (rodando) {
+			animarOxigenio();
+			animarHelice();
+			executarTiro();
+
+			ativarTiroSubRival();
+			executarTiroSubRival();
+
+			colocarMegulhadores();
+			colocarTubaroes();
+			colocarSubRival();
+
+			animarMergulhador();
+			animarTubaroes();
+			animarSubRival();
+			animarBarco();
+
+			colisaoMergulhador();
+			colisaoSubmarinos();
+			colisaoTubarao();
+			colisaoBarco();
+
+			colisaoTiroTubarao();
+			colisaoTiroSubRival();
+
+			colisaoTiroSubRivalnoSub();
+		}
+		//SE O CARA SUBIR COM OS 8 MERGULHADORES
+		if (bonusMergulhador == true) {
+			Sleep(300);
+			placar += 50;
+			mergulhadorescoletados--;
+			if (mergulhadorescoletados == 0) {
+				bonusMergulhador = false;
+				oxigenio = true;
+			}
+		}
+		if (oxigenio) {
+			barrafinal = false;
+			if (barraoxigenio < 0) {
+				barraoxigenio += 5;
+				if (barraoxigenio >= 0) {
+					barraoxigenio = 0;
+					oxigenio = false;
+					rodando = true;
+				}
+			}
+		}
+		//QUANDO O CARA MORRE
+		if (explosaoSubmarino == true) {
+			rodando = false;
+			printf("fudeu");
+
+
+
+			perdeu = true;
+			explosaoSubmarino = false;
+		}
+	}
+
 
 	glutPostRedisplay();
-	glutTimerFunc(75, animacao, 1);
+	glutTimerFunc(55, animacao, 1);
 }
 void keyboard(unsigned char tecla, int x, int y) {
 	if (tecla == 'w' || tecla == 'W') {
@@ -2198,6 +2398,20 @@ void keyboard(unsigned char tecla, int x, int y) {
 		}
 	}
 	if (tecla == '0') {
+		if (menu == true) {
+			if (opcaomenu == 1 && opcaoSelecionada == 0) {
+				opcaoSelecionada = 1;
+				menu = false;
+				return;
+			}
+			if (opcaoSelecionada == 3 || opcaoSelecionada == 2) {
+				opcaoSelecionada = 0;
+				opcaomenu = 1;
+			}
+			if (opcaomenu == 2) opcaoSelecionada = 2;
+			if (opcaomenu == 3) opcaoSelecionada = 3;
+			return;
+		}
 		if (rodando == false) {
 			rodando = true;
 			return;
@@ -2212,10 +2426,20 @@ void keyboard(unsigned char tecla, int x, int y) {
 	}
 	glutPostRedisplay();
 }
+void SpecialInput(int key, int x, int y) {
+	if (key == GLUT_KEY_UP) {
+		if (opcaomenu > 1 && opcaoSelecionada == 0) opcaomenu--;
+	}
+	if (key == GLUT_KEY_DOWN) {
+		if (opcaomenu < 3 && opcaoSelecionada == 0) opcaomenu++;
+	}
+	glutPostRedisplay();
+}
 void display() {
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	glClearColor(0, 0, 1, 1);
+	if (menu == true) glClearColor(0, 0, 0, 1);
+	else glClearColor(0, 0, 1, 1);
 	glClear(GL_COLOR_BUFFER_BIT);
 	glTranslatef(janela_largura / 2, janela_altura / 2, 0);
 	glViewport(0, 0, janela_largura, janela_altura);
