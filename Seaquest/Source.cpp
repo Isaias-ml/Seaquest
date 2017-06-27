@@ -13,7 +13,7 @@ char plac[20];
 int merX[6] = { -450, 450,-450,450,-450,450 }, merY[6], subX[6] = { -450, 450,-450,450,-450,450 }, subY[6], tubX[6] = { -450,450,-450,450,-450,450 }, tubY[6],
 barcoX = -450, superficie = 0, tiroSubX[6] = { -450,450,-450,450,-450,450 }, tiroSubY[6] = { 0 }, opcaomenu = 1, opcaoSelecionada = 0;
 int placar = 0, posX = 0, posY = 0, tiroX = 0, tiroY = 0, bufferY = 0, qtdtubaroes = 0, randomico = 0, qtdmergulhadores = 0,
-mergulhadorescoletados = 0, vidas = 3, qtdsubmarinos = 0, mergulhadoresTotal = 0, contador = 0, contador1 = 0;
+mergulhadorescoletados = 0, vidas = 3, qtdsubmarinos = 0, mergulhadoresTotal = 0, contador = 0, contador1 = 0, pontuacaomaxima = 0;
 float ang, barraoxigenio = 0;
 bool esquerda = false, helice = true, tiro = false, tiroesquerda = false, tirodireita = false, perdeu = false, morreu = false, mergulhador[6] = { false },
 submarinos[6] = { false }, tubaroes[6] = { false }, rodando = true, pausado = false, barco = true, barcoesquerda = true, tiroSub[6] = { false }, barrafinal = false,
@@ -2113,6 +2113,7 @@ void Perdeu() {
 }
 void Morreu() {
 	if (morreu == true) {
+		if (placar > pontuacaomaxima) pontuacaomaxima = placar;
 		rodando = false;
 		glBegin(GL_QUADS);
 		glColor3f(0, 0, 0);
@@ -2147,6 +2148,9 @@ void desenhar() {
 
 
 		glColor3f(1, 1, 1);
+		char string[50];
+		sprintf_s(string, "Pontuacao maxima: %d", pontuacaomaxima);
+		DesenhaTexto(string, -390, 230, GLUT_BITMAP_8_BY_13);
 		DesenhaTexto("SEA SUB", -30, 200, GLUT_BITMAP_TIMES_ROMAN_24);
 		if (opcaoSelecionada == 0) {
 			DesenhaTexto("- Use as setas para mover - ", -50, 110, GLUT_BITMAP_HELVETICA_12);
@@ -2170,7 +2174,7 @@ void desenhar() {
 			DesenhaTubarao(-120, -70);
 			glColor3f(1, 1, 1);
 			DesenhaTexto(" - 20 Pontos ao destruir. - Colidindo morre.", -80, -65, GLUT_BITMAP_8_BY_13);
-			
+
 			glPushMatrix();
 			glTranslatef(0, -270, 0);
 			DesenhaBarco(-140);
@@ -2258,12 +2262,16 @@ void desenhar() {
 
 		//SE PERDER UMA VIDA
 		glColor3f(0, 0, 0);
-		if (rodando == false && bonusMergulhador == false && oxigenio == false && morreu == false) DesenhaTexto("Tecle 0 para Continuar!", -100, 0, GLUT_BITMAP_TIMES_ROMAN_24);
+		if (pausado == false && rodando == false && bonusMergulhador == false && oxigenio == false && morreu == false) {
+			DesenhaTexto("Tecle 0 para Continuar!", -100, 0, GLUT_BITMAP_TIMES_ROMAN_24);
+			DesenhaTexto("Tecle 9 para sair!", -70, -50, GLUT_BITMAP_9_BY_15);
+		}
 		//SE PAUSAR
 		glColor3f(0, 0, 0);
-		if (pausado) {
+		if (pausado && rodando == false) {
 			DesenhaTexto("PAUSE", -20, 20, GLUT_BITMAP_TIMES_ROMAN_24);
-			DesenhaTexto("Tecle 0 para Continuar!", -100, 0, GLUT_BITMAP_TIMES_ROMAN_24);
+			DesenhaTexto("Tecle P para Continuar!", -100, 0, GLUT_BITMAP_TIMES_ROMAN_24);
+			DesenhaTexto("Tecle 9 para sair!", -70, -50, GLUT_BITMAP_9_BY_15);
 		}
 		//SE PERDER UMA VIDA
 		Perdeu();
@@ -2334,7 +2342,6 @@ void animacao(int valor) {
 		//QUANDO O CARA MORRE
 		if (explosaoSubmarino == true) {
 			rodando = false;
-			printf("fudeu");
 
 
 
@@ -2348,60 +2355,77 @@ void animacao(int valor) {
 	glutTimerFunc(55, animacao, 1);
 }
 void keyboard(unsigned char tecla, int x, int y) {
-	if (tecla == 'w' || tecla == 'W') {
-		if (posY != 160) {
-			posY += 10;
-			if (tiro == false) {
-				tiroY += 10;
-			}
-			else {
-				bufferY += 10;
-			}
-		}
-	}
-	if (tecla == 's' || tecla == 'S') {
-		if (posY != -140) {
-			posY -= 10;
-			if (tiro == false) {
-				tiroY -= 10;
-			}
-			else {
-				bufferY -= 10;
+	if (pausado == false) {
+		if (tecla == 'w' || tecla == 'W') {
+			if (posY != 160) {
+				posY += 10;
+				if (tiro == false) {
+					tiroY += 10;
+				}
+				else {
+					bufferY += 10;
+				}
 			}
 		}
-	}
-	if (tecla == 'a' || tecla == 'A') {
-		if (posX != -300) {
-			posX -= 20;
-			if (tiro == false) {
-				tiroX -= 20;
+		if (tecla == 's' || tecla == 'S') {
+			if (posY != -140) {
+				posY -= 10;
+				if (tiro == false) {
+					tiroY -= 10;
+				}
+				else {
+					bufferY -= 10;
+				}
 			}
 		}
-		if (esquerda == false) {
-			esquerda = true;
-			posX += 100;
-			if (tiro == false) tiroX -= 80;
-		}
+		if (tecla == 'a' || tecla == 'A') {
+			if (posX != -300) {
+				posX -= 20;
+				if (tiro == false) {
+					tiroX -= 20;
+				}
+			}
+			if (esquerda == false) {
+				esquerda = true;
+				posX += 100;
+				if (tiro == false) tiroX -= 80;
+			}
 
-	}
-	if (tecla == 'd' || tecla == 'D') {
-		if (posX != 300) {
-			posX += 20;
-			if (tiro == false) {
-				tiroX += 20;
+		}
+		if (tecla == 'd' || tecla == 'D') {
+			if (posX != 300) {
+				posX += 20;
+				if (tiro == false) {
+					tiroX += 20;
+				}
+			}
+			if (esquerda == true) {
+				esquerda = false;
+				posX -= 100;
+				if (tiro == false) tiroX += 80;
 			}
 		}
-		if (esquerda == true) {
-			esquerda = false;
-			posX -= 100;
-			if (tiro == false) tiroX += 80;
-		}
 	}
+
 	if (tecla == '0') {
+		if (morreu == true) {
+			menu = true;
+			morreu = false;
+			opcaoSelecionada = 0;
+			return;
+		}
 		if (menu == true) {
 			if (opcaomenu == 1 && opcaoSelecionada == 0) {
 				opcaoSelecionada = 1;
 				menu = false;
+				vidas = 3;
+				rodando = true;
+				placar = 0;
+				posX = 0;
+				posY = 0;
+				tiroX = 0;
+				tiroY = 0;
+				esquerda = false;
 				return;
 			}
 			if (opcaoSelecionada == 3 || opcaoSelecionada == 2) {
@@ -2412,17 +2436,29 @@ void keyboard(unsigned char tecla, int x, int y) {
 			if (opcaomenu == 3) opcaoSelecionada = 3;
 			return;
 		}
-		if (rodando == false) {
+		if (rodando == false && pausado == false) {
 			rodando = true;
 			return;
 		}
 		if (tiro == false) tiro = true;
 	}
+	if (tecla == '9') {
+		if (pausado || rodando == false && pausado == false) {
+			menu = true;
+			pausado = false;
+			opcaoSelecionada = 0;
+			opcaomenu = 1;
+		}
+	}
 	if (tecla == 'p' || tecla == 'P') {
-		if (rodando) rodando = false;
-		else rodando = true;
-		if (pausado) pausado = false;
-		else pausado = true;
+		if (pausado) {
+			pausado = false;
+			rodando = true;
+		}
+		else {
+			pausado = true;
+			rodando = false;
+		}
 	}
 	glutPostRedisplay();
 }
