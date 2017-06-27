@@ -13,7 +13,7 @@ char plac[20];
 int merX[6] = { -450, 450,-450,450,-450,450 }, merY[6], subX[6] = { -450, 450,-450,450,-450,450 }, subY[6], tubX[6] = { -450,450,-450,450,-450,450 }, tubY[6],
 barcoX = -450, superficie = 0, tiroSubX[6] = { -450,450,-450,450,-450,450 }, tiroSubY[6] = { 0 }, opcaomenu = 1, opcaoSelecionada = 0;
 int placar = 0, posX = 0, posY = 0, tiroX = 0, tiroY = 0, bufferY = 0, qtdtubaroes = 0, randomico = 0, qtdmergulhadores = 0,
-mergulhadorescoletados = 0, vidas = 3, qtdsubmarinos = 0, mergulhadoresTotal = 0, contador = 0, contador1 = 0, pontuacaomaxima = 0, dificuldadejogo = 1;
+mergulhadorescoletados = 0, vidas = 3, qtdsubmarinos = 0, mergulhadoresTotal = 0, contador = 0, contador1 = 0, contador2 = 0, pontuacaomaxima = 0, velocidade = 65;
 float ang, barraoxigenio = 0;
 bool esquerda = false, helice = true, tiro = false, tiroesquerda = false, tirodireita = false, perdeu = false, morreu = false, mergulhador[6] = { false },
 submarinos[6] = { false }, tubaroes[6] = { false }, rodando = true, pausado = false, barco = true, barcoesquerda = true, tiroSub[6] = { false }, barrafinal = false,
@@ -2277,6 +2277,7 @@ void Perdeu() {
 		vidas--;
 		contador = 0;
 		contador1 = 0;
+		contador2 = 0;
 
 		if (mergulhadorescoletados >= 2)	mergulhadorescoletados -= 2;
 		else if (mergulhadorescoletados == 1)	mergulhadorescoletados--;
@@ -2349,7 +2350,7 @@ void desenhar() {
 		char string[50];
 		sprintf_s(string, "Pontuacao maxima: %d", pontuacaomaxima);
 		DesenhaTexto(string, -390, 230, GLUT_BITMAP_8_BY_13);
-		DesenhaTexto("SEA SUB", -30, 200, GLUT_BITMAP_TIMES_ROMAN_24);
+		DesenhaTexto("SEA SUB", -30, 180, GLUT_BITMAP_TIMES_ROMAN_24);
 		if (opcaoSelecionada == 0) {
 			DesenhaTexto("- Use as setas para mover - ", -50, 110, GLUT_BITMAP_HELVETICA_12);
 			if (animaMenu == true) DesenhaTexto("- Tecle 0 para selecionar - ", -48, 80, GLUT_BITMAP_HELVETICA_12);
@@ -2400,6 +2401,12 @@ void desenhar() {
 
 			DesenhaTexto("P", -80, -120, GLUT_BITMAP_TIMES_ROMAN_24);
 			DesenhaTexto(" - Pause", -40, -118, GLUT_BITMAP_9_BY_15);
+
+			DesenhaTexto("8", -80, -150, GLUT_BITMAP_TIMES_ROMAN_24);
+			DesenhaTexto(" - Aumenta Velocidade", -40, -148, GLUT_BITMAP_9_BY_15);
+
+			DesenhaTexto("2", -80, -180, GLUT_BITMAP_TIMES_ROMAN_24);
+			DesenhaTexto(" - Diminui Velocidade", -40, -178, GLUT_BITMAP_9_BY_15);
 		}
 
 		DesenhaTexto("FELIPE PERGHER", -380, -240, GLUT_BITMAP_9_BY_15);
@@ -2544,9 +2551,9 @@ void animacao(int valor) {
 			rodando = false;
 			if (cor == false) cor = true;
 			else cor = false;
-			contador++;
+			contador2++;
 
-			if (contador == 20) {
+			if (contador2 == 20) {
 				perdeu = true;
 				explosaoSubmarino = false;
 			}
@@ -2554,7 +2561,7 @@ void animacao(int valor) {
 	}
 
 	glutPostRedisplay();
-	glutTimerFunc(55, animacao, 1);
+	glutTimerFunc(velocidade, animacao, 1);
 }
 void keyboard(unsigned char tecla, int x, int y) {
 	if (pausado == false) {
@@ -2661,15 +2668,12 @@ void keyboard(unsigned char tecla, int x, int y) {
 			pausado = true;
 			rodando = false;
 		}
-	} 
-	if (tecla == '1') {
-
+	}
+	if (tecla == '8') {
+		if (velocidade >= 20) velocidade -= 10;
 	}
 	if (tecla == '2') {
-
-	}
-	if (tecla == '3') {
-
+		if (velocidade <= 150) velocidade += 10;
 	}
 	glutPostRedisplay();
 }
