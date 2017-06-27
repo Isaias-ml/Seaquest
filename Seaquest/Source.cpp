@@ -2537,6 +2537,7 @@ void animacao(int valor) {
 		}
 		if (oxigenio) {
 			barrafinal = false;
+			if (vidas < 3) vidas++;
 			if (barraoxigenio < 0) {
 				barraoxigenio += 5;
 				if (barraoxigenio >= 0) {
