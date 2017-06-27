@@ -13,11 +13,11 @@ char plac[20];
 int merX[6] = { -450, 450,-450,450,-450,450 }, merY[6], subX[6] = { -450, 450,-450,450,-450,450 }, subY[6], tubX[6] = { -450,450,-450,450,-450,450 }, tubY[6],
 barcoX = -450, superficie = 0, tiroSubX[6] = { -450,450,-450,450,-450,450 }, tiroSubY[6] = { 0 }, opcaomenu = 1, opcaoSelecionada = 0;
 int placar = 0, posX = 0, posY = 0, tiroX = 0, tiroY = 0, bufferY = 0, qtdtubaroes = 0, randomico = 0, qtdmergulhadores = 0,
-mergulhadorescoletados = 0, vidas = 3, qtdsubmarinos = 0, mergulhadoresTotal = 0, contador = 0, contador1 = 0, pontuacaomaxima = 0;
+mergulhadorescoletados = 0, vidas = 3, qtdsubmarinos = 0, mergulhadoresTotal = 0, contador = 0, contador1 = 0, pontuacaomaxima = 0, dificuldadejogo = 1;
 float ang, barraoxigenio = 0;
 bool esquerda = false, helice = true, tiro = false, tiroesquerda = false, tirodireita = false, perdeu = false, morreu = false, mergulhador[6] = { false },
 submarinos[6] = { false }, tubaroes[6] = { false }, rodando = true, pausado = false, barco = true, barcoesquerda = true, tiroSub[6] = { false }, barrafinal = false,
-trocacor = true, bonusMergulhador = false, explosaoSubmarino = false, oxigenio = false, menu = true, animaMenu = true;
+trocacor = true, bonusMergulhador = false, explosaoSubmarino = false, oxigenio = false, menu = true, animaMenu = true, cor = false;
 
 void display(void);
 void animacao(int valor);
@@ -817,41 +817,236 @@ void DesenhaBarco(int x) {
 }
 void DesenhaExplosao() {
 	if (esquerda) {
+		//PRIMEIRO POLIGONO
 		glPushMatrix();
-		glColor3f(1.0f, 0.0f, 0.0f);
-
-		glBegin(GL_TRIANGLES);
-		glVertex2f(0, 45);
-		glVertex2f(50, -20);
-		glVertex2f(-50, -20);
-		glEnd();
-
-		glBegin(GL_TRIANGLES);
-		glVertex2f(0, -45);
+		if (cor == true) glColor3f(1, 0, 0);
+		else glColor3f(1, 1, 0);
+		glLineWidth(7);
+		glTranslatef(-60, 0, 0);
+		glTranslatef(posX, posY, 0);
+		glBegin(GL_LINE_LOOP);
+		glVertex2f(0, 40);
+		glVertex2f(20, 10);
+		glVertex2f(60, 60);
 		glVertex2f(50, 20);
+		glVertex2f(80, 40);
+		glVertex2f(70, 5);
+		glVertex2f(100, 5);
+		glVertex2f(70, -10);
+		glVertex2f(115, -20);
+		glVertex2f(60, -30);
+		glVertex2f(70, -55);
+		glVertex2f(30, -40);
+		glVertex2f(10, -60);
+		glVertex2f(0, -35);
+		glVertex2f(-20, -65);
+		glVertex2f(-15, -30);
+		glVertex2f(-60, -20);
+		glVertex2f(-15, -5);
 		glVertex2f(-50, 20);
+		glVertex2f(-10, 10);
+		glVertex2f(0, 40);
 		glEnd();
 
+		//SEGUNDO POLIGONO
+		if (cor == false) glColor3f(1, 0, 0);
+		else glColor3f(1, 1, 0);
+		glLineWidth(7);
+		glBegin(GL_LINE_LOOP);
+		glVertex2f(0, 30);
+		glVertex2f(10, 0);
+		glVertex2f(50, 50);
+		glVertex2f(40, 10);
+		glVertex2f(70, 30);
+		glVertex2f(60, 0);
+		glVertex2f(90, 0);
+		glVertex2f(60, 0);
+		glVertex2f(105, -10);
+		glVertex2f(50, -20);
+		glVertex2f(60, -45);
+		glVertex2f(20, -30);
+		glVertex2f(0, -50);
+		glVertex2f(0, -25);
+		glVertex2f(-10, -55);
+		glVertex2f(-5, -20);
+		glVertex2f(-50, -10);
+		glVertex2f(-5, 0);
+		glVertex2f(-40, 10);
+		glVertex2f(0, 0);
+		glVertex2f(0, 30);
+		glEnd();
 
+		//TERCEIRO POLIGONO
+		if (cor == true) glColor3f(1, 0, 0);
+		else glColor3f(1, 1, 0);
+		glLineWidth(7);
+		glBegin(GL_LINE_LOOP);
+		glVertex2f(0, 20);
+		glVertex2f(0, 0);
+		glVertex2f(40, 40);
+		glVertex2f(30, 0);
+		glVertex2f(60, 20);
+		glVertex2f(50, 0);
+		glVertex2f(80, 0);
+		glVertex2f(50, 0);
+		glVertex2f(95, 0);
+		glVertex2f(40, -10);
+		glVertex2f(50, -35);
+		glVertex2f(10, -20);
+		glVertex2f(0, -40);
+		glVertex2f(0, -15);
+		glVertex2f(0, -45);
+		glVertex2f(0, -10);
+		glVertex2f(-40, 0);
+		glVertex2f(0, 0);
+		glVertex2f(-30, 0);
+		glVertex2f(0, 0);
+		glVertex2f(0, 20);
+		glEnd();
+
+		//QUARTO POLIGONO
+		if (cor == false) glColor3f(1, 0, 0);
+		else glColor3f(1, 1, 0);
+		glLineWidth(7);
+		glBegin(GL_LINE_LOOP);
+		glVertex2f(0, 10);
+		glVertex2f(0, 0);
+		glVertex2f(30, 30);
+		glVertex2f(20, 0);
+		glVertex2f(50, 10);
+		glVertex2f(40, 0);
+		glVertex2f(70, 0);
+		glVertex2f(40, 0);
+		glVertex2f(85, 0);
+		glVertex2f(30, 0);
+		glVertex2f(40, -25);
+		glVertex2f(0, -10);
+		glVertex2f(0, -30);
+		glVertex2f(0, -5);
+		glVertex2f(0, -35);
+		glVertex2f(0, 0);
+		glVertex2f(-30, 0);
+		glVertex2f(0, 0);
+		glVertex2f(-20, 0);
+		glVertex2f(0, 0);
+		glVertex2f(0, 10);
+		glEnd();
 		glPopMatrix();
 	}
 	else {
+		//PRIMEIRO POLIGONO
 		glPushMatrix();
-		glColor3f(1.0f, 0.0f, 0.0f);
-
-		glBegin(GL_TRIANGLES);
-		glVertex2f(0, 45);
-		glVertex2f(50, -20);
-		glVertex2f(-50, -20);
-		glEnd();
-
-		glBegin(GL_TRIANGLES);
-		glVertex2f(0, -45);
+		if (cor == true) glColor3f(1, 0, 0);
+		else glColor3f(1, 1, 0);
+		glLineWidth(7);
+		glTranslatef(posX, posY, 0);
+		glBegin(GL_LINE_LOOP);
+		glVertex2f(0, 40);
+		glVertex2f(20, 10);
+		glVertex2f(60, 60);
 		glVertex2f(50, 20);
+		glVertex2f(80, 40);
+		glVertex2f(70, 5);
+		glVertex2f(100, 5);
+		glVertex2f(70, -10);
+		glVertex2f(115, -20);
+		glVertex2f(60, -30);
+		glVertex2f(70, -55);
+		glVertex2f(30, -40);
+		glVertex2f(10, -60);
+		glVertex2f(0, -35);
+		glVertex2f(-20, -65);
+		glVertex2f(-15, -30);
+		glVertex2f(-60, -20);
+		glVertex2f(-15, -5);
 		glVertex2f(-50, 20);
+		glVertex2f(-10, 10);
+		glVertex2f(0, 40);
 		glEnd();
 
+		//SEGUNDO POLIGONO
+		if (cor == false) glColor3f(1, 0, 0);
+		else glColor3f(1, 1, 0);
+		glLineWidth(7);
+		glBegin(GL_LINE_LOOP);
+		glVertex2f(0, 30);
+		glVertex2f(10, 0);
+		glVertex2f(50, 50);
+		glVertex2f(40, 10);
+		glVertex2f(70, 30);
+		glVertex2f(60, 0);
+		glVertex2f(90, 0);
+		glVertex2f(60, 0);
+		glVertex2f(105, -10);
+		glVertex2f(50, -20);
+		glVertex2f(60, -45);
+		glVertex2f(20, -30);
+		glVertex2f(0, -50);
+		glVertex2f(0, -25);
+		glVertex2f(-10, -55);
+		glVertex2f(-5, -20);
+		glVertex2f(-50, -10);
+		glVertex2f(-5, 0);
+		glVertex2f(-40, 10);
+		glVertex2f(0, 0);
+		glVertex2f(0, 30);
+		glEnd();
 
+		//TERCEIRO POLIGONO
+		if (cor == true) glColor3f(1, 0, 0);
+		else glColor3f(1, 1, 0);
+		glLineWidth(7);
+		glBegin(GL_LINE_LOOP);
+		glVertex2f(0, 20);
+		glVertex2f(0, 0);
+		glVertex2f(40, 40);
+		glVertex2f(30, 0);
+		glVertex2f(60, 20);
+		glVertex2f(50, 0);
+		glVertex2f(80, 0);
+		glVertex2f(50, 0);
+		glVertex2f(95, 0);
+		glVertex2f(40, -10);
+		glVertex2f(50, -35);
+		glVertex2f(10, -20);
+		glVertex2f(0, -40);
+		glVertex2f(0, -15);
+		glVertex2f(0, -45);
+		glVertex2f(0, -10);
+		glVertex2f(-40, 0);
+		glVertex2f(0, 0);
+		glVertex2f(-30, 0);
+		glVertex2f(0, 0);
+		glVertex2f(0, 20);
+		glEnd();
+
+		//QUARTO POLIGONO
+		if (cor == false) glColor3f(1, 0, 0);
+		else glColor3f(1, 1, 0);
+		glLineWidth(7);
+		glBegin(GL_LINE_LOOP);
+		glVertex2f(0, 10);
+		glVertex2f(0, 0);
+		glVertex2f(30, 30);
+		glVertex2f(20, 0);
+		glVertex2f(50, 10);
+		glVertex2f(40, 0);
+		glVertex2f(70, 0);
+		glVertex2f(40, 0);
+		glVertex2f(85, 0);
+		glVertex2f(30, 0);
+		glVertex2f(40, -25);
+		glVertex2f(0, -10);
+		glVertex2f(0, -30);
+		glVertex2f(0, -5);
+		glVertex2f(0, -35);
+		glVertex2f(0, 0);
+		glVertex2f(-30, 0);
+		glVertex2f(0, 0);
+		glVertex2f(-20, 0);
+		glVertex2f(0, 0);
+		glVertex2f(0, 10);
+		glEnd();
 		glPopMatrix();
 	}
 }
@@ -2080,6 +2275,9 @@ void Perdeu() {
 	if (perdeu == true) {
 		perdeu = false;
 		vidas--;
+		contador = 0;
+		contador1 = 0;
+
 		if (mergulhadorescoletados >= 2)	mergulhadorescoletados -= 2;
 		else if (mergulhadorescoletados == 1)	mergulhadorescoletados--;
 		for (int i = 0; i < 6; i++) {
@@ -2147,7 +2345,7 @@ void desenhar() {
 		}
 
 
-		glColor3f(1, 1, 1);
+		glColor3f(1, 1, 1); 
 		char string[50];
 		sprintf_s(string, "Pontuacao maxima: %d", pontuacaomaxima);
 		DesenhaTexto(string, -390, 230, GLUT_BITMAP_8_BY_13);
@@ -2199,6 +2397,9 @@ void desenhar() {
 
 			DesenhaTexto("D", -80, -90, GLUT_BITMAP_TIMES_ROMAN_24);
 			DesenhaTexto(" - Direita", -40, -86, GLUT_BITMAP_9_BY_15);
+
+			DesenhaTexto("P", -80, -120, GLUT_BITMAP_TIMES_ROMAN_24);
+			DesenhaTexto(" - Pause", -40, -118, GLUT_BITMAP_9_BY_15);
 		}
 
 		DesenhaTexto("FELIPE PERGHER", -380, -240, GLUT_BITMAP_9_BY_15);
@@ -2209,7 +2410,7 @@ void desenhar() {
 		DesenhaBala();
 		DesenhaSubmarino();
 		DesenhaBarco(barcoX);
-		//DesenhaExplosao();
+		if (explosaoSubmarino == true) DesenhaExplosao();
 
 		//-----------------------------------------------------------------
 
@@ -2262,7 +2463,7 @@ void desenhar() {
 
 		//SE PERDER UMA VIDA
 		glColor3f(0, 0, 0);
-		if (pausado == false && rodando == false && bonusMergulhador == false && oxigenio == false && morreu == false) {
+		if (pausado == false && rodando == false && bonusMergulhador == false && oxigenio == false && morreu == false && explosaoSubmarino == false) {
 			DesenhaTexto("Tecle 0 para Continuar!", -100, 0, GLUT_BITMAP_TIMES_ROMAN_24);
 			DesenhaTexto("Tecle 9 para sair!", -70, -50, GLUT_BITMAP_9_BY_15);
 		}
@@ -2278,7 +2479,6 @@ void desenhar() {
 		//SE ACABAR AS VIDAS
 		Morreu();
 	}
-
 }
 void animacao(int valor) {
 	if (menu == true) {
@@ -2342,14 +2542,16 @@ void animacao(int valor) {
 		//QUANDO O CARA MORRE
 		if (explosaoSubmarino == true) {
 			rodando = false;
+			if (cor == false) cor = true;
+			else cor = false;
+			contador++;
 
-
-
-			perdeu = true;
-			explosaoSubmarino = false;
+			if (contador == 20) {
+				perdeu = true;
+				explosaoSubmarino = false;
+			}
 		}
 	}
-
 
 	glutPostRedisplay();
 	glutTimerFunc(55, animacao, 1);
@@ -2459,6 +2661,15 @@ void keyboard(unsigned char tecla, int x, int y) {
 			pausado = true;
 			rodando = false;
 		}
+	} 
+	if (tecla == '1') {
+
+	}
+	if (tecla == '2') {
+
+	}
+	if (tecla == '3') {
+
 	}
 	glutPostRedisplay();
 }
